@@ -37,10 +37,10 @@ comidas-one-page/
 - Pollo con arroz — `img/almuerzo/pollo-con-arroz.png`
 
 ### Desayuno
-_(pendiente)_
+- Pan con palta — `img/desayuno/pan-con-palta-bebida-caliente.png`
 
 ### Cena
-_(pendiente)_
+- Pan con palta — `img/cena/pan-con-palta-bebida-caliente.png`
 
 ## Fijar menú por día
 
