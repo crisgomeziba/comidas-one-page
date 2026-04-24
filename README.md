@@ -36,10 +36,12 @@ comidas-one-page/
 - Fideos con salsa — `img/almuerzo/fideos-con-salsa.png`
 - Pollo con arroz — `img/almuerzo/pollo-con-arroz.png`
 - Porotos — `img/almuerzo/porotos.png`
+- Lentejas — `img/almuerzo/lentejas.png`
 
 ### Desayuno
 - Pan con palta — `img/desayuno/pan-con-palta-bebida-caliente.png`
 - Quesadillas y huevo — `img/desayuno/quesadillas-huevo.png`
+- Yogurt y fruta — `img/desayuno/yogurt-y-fruta.png`
 
 ### Cena
 - Pan con palta — `img/cena/pan-con-palta-bebida-caliente.png`
