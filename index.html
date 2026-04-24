@@ -85,6 +85,70 @@
     #app.offhours {
       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     }
+    #app.offhours #roll-btn {
+      display: none;
+    }
+
+    /* ── Botón roll ── */
+    #roll-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow:
+        0 0 18px rgba(255, 255, 255, 0.08),
+        0 0 6px  rgba(255, 255, 255, 0.06),
+        inset 0 0 12px rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.6);
+      z-index: 10;
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.2s ease,
+        color 0.2s ease;
+      /* evitar selección de texto al clickear rápido */
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #roll-btn:hover {
+      color: rgba(255, 255, 255, 0.9);
+      box-shadow:
+        0 0 28px rgba(255, 255, 255, 0.16),
+        0 0 10px rgba(255, 255, 255, 0.10),
+        inset 0 0 16px rgba(255, 255, 255, 0.06);
+    }
+
+    #roll-btn:hover .btn-icon {
+      animation: spin-icon 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Se agranda al presionar */
+    #roll-btn:active,
+    #roll-btn.pressed {
+      transform: scale(1.18);
+    }
+
+    #roll-btn .btn-icon {
+      display: block;
+      width: 22px;
+      height: 22px;
+    }
+
+    @keyframes spin-icon {
+      0%   { transform: rotate(0deg)   scale(1);    }
+      50%  { transform: rotate(140deg) scale(1.15); }
+      100% { transform: rotate(180deg) scale(1);    }
+    }
   </style>
 </head>
 <body>
@@ -97,6 +161,16 @@
     <div class="clock" id="clock"></div>
   </div>
 </div>
+
+<!-- Botón roll -->
+<button id="roll-btn" title="Otra opción" aria-label="Mostrar otra comida">
+  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="17 1 21 5 17 9"/>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <polyline points="7 23 3 19 7 15"/>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+  </svg>
+</button>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -135,6 +209,7 @@ const MENU_SEMANAL = {
  * Se usa cuando el día/comida no está en MENU_SEMANAL.
  * La elección es aleatoria pero estable durante todo el día
  * (misma comida si recargás la página).
+ * El botón de roll cicla entre las opciones disponibles.
  */
 const OPCIONES = {
   desayuno: [
@@ -176,20 +251,40 @@ function getTipoComida(hora) {
   return null;
 }
 
-/** Elige una comida de la lista de forma estable durante el día */
-function getComidaAleatoria(tipo, fecha) {
+/** Lee el offset de roll guardado para hoy. Resetea si cambió el día. */
+function getRollOffset(tipo) {
+  const hoy = new Date().toISOString().slice(0, 10);
+  try {
+    const stored = JSON.parse(localStorage.getItem('roll') || '{}');
+    if (stored.fecha !== hoy) return 0;
+    return stored[tipo] ?? 0;
+  } catch { return 0; }
+}
+
+/** Guarda el offset de roll para el tipo de comida actual */
+function saveRollOffset(tipo, offset) {
+  const hoy = new Date().toISOString().slice(0, 10);
+  try {
+    const stored = JSON.parse(localStorage.getItem('roll') || '{}');
+    const next = stored.fecha === hoy ? { ...stored } : { fecha: hoy };
+    next[tipo] = offset;
+    localStorage.setItem('roll', JSON.stringify(next));
+  } catch {}
+}
+
+/** Elige una comida de la lista de forma estable (seed por día + offset de roll) */
+function getComidaAleatoria(tipo, fecha, rollOffset) {
   const opciones = OPCIONES[tipo];
-  // Seed único por día y tipo de comida
   const seed =
     fecha.getFullYear() * 10000 +
     (fecha.getMonth() + 1) * 100 +
     fecha.getDate() +
     { desayuno: 1, almuerzo: 2, cena: 3 }[tipo];
-  const idx = Math.floor(seededRandom(seed) * opciones.length);
-  return opciones[idx];
+  const baseIdx = Math.floor(seededRandom(seed) * opciones.length);
+  return opciones[(baseIdx + rollOffset) % opciones.length];
 }
 
-function render() {
+function render(rollOffset) {
   const ahora   = new Date();
   const hora    = ahora.getHours();
   const dia     = ahora.getDay();
@@ -216,21 +311,43 @@ function render() {
 
   appEl.classList.remove('offhours');
 
-  const labels = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', cena: 'Cena' };
-  const comida =
-    MENU_SEMANAL[dia]?.[tipo] ?? getComidaAleatoria(tipo, ahora);
+  const labels  = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', cena: 'Cena' };
+  const offset  = rollOffset ?? getRollOffset(tipo);
+  const comida  = MENU_SEMANAL[dia]?.[tipo] ?? getComidaAleatoria(tipo, ahora, offset);
 
   typeEl.textContent = labels[tipo];
   nameEl.textContent = comida.nombre;
   bgEl.style.backgroundImage = `url('${comida.imagen}')`;
 }
 
+// ── Botón roll ──────────────────────────────────────────────────
+const rollBtn = document.getElementById('roll-btn');
+
+rollBtn.addEventListener('mouseup', handleRoll);
+rollBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleRoll(); });
+
+function handleRoll() {
+  const ahora = new Date();
+  const tipo  = getTipoComida(ahora.getHours());
+  if (!tipo) return;
+
+  // Si el día está fijado en MENU_SEMANAL, el botón no hace nada
+  if (MENU_SEMANAL[ahora.getDay()]?.[tipo]) return;
+
+  const opciones   = OPCIONES[tipo];
+  const oldOffset  = getRollOffset(tipo);
+  const newOffset  = (oldOffset + 1) % opciones.length;
+
+  saveRollOffset(tipo, newOffset);
+  render(newOffset);
+}
+
+// ── Inicio ──────────────────────────────────────────────────────
 render();
 
 // Actualizar el reloj cada minuto
 setInterval(() => {
-  const clockEl = document.getElementById('clock');
-  clockEl.textContent = new Date().toLocaleTimeString('es-ES', {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
   });
