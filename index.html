@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Qué comemos?</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100dvh;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: opacity 0.8s ease;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.15) 0%,
+        rgba(0, 0, 0, 0.55) 100%
+      );
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      color: #fff;
+      padding: 2rem;
+      user-select: none;
+    }
+
+    .meal-type {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: clamp(0.7rem, 2vw, 1rem);
+      font-weight: 500;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-bottom: 0.75rem;
+    }
+
+    .meal-name {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: clamp(2.5rem, 9vw, 7rem);
+      font-weight: 800;
+      line-height: 1.05;
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+      letter-spacing: -0.02em;
+    }
+
+    .clock {
+      margin-top: 1.5rem;
+      font-family: ui-monospace, monospace;
+      font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+      opacity: 0.45;
+      letter-spacing: 0.15em;
+    }
+
+    /* Estado "fuera de horario" */
+    #app.offhours #bg {
+      background-image: none !important;
+    }
+    #app.offhours {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="bg"></div>
+  <div class="overlay"></div>
+  <div class="content">
+    <div class="meal-type" id="meal-type"></div>
+    <div class="meal-name" id="meal-name">Cargando…</div>
+    <div class="clock" id="clock"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — editá esto a tu gusto
+// ═══════════════════════════════════════════════════════════════
+
+/** Rangos horarios para cada tipo de comida (hora del día, 0-23) */
+const HORARIOS = {
+  desayuno: { desde: 6,  hasta: 11 },
+  almuerzo: { desde: 11, hasta: 16 },
+  cena:     { desde: 18, hasta: 23 },
+};
+
+/**
+ * Menú semanal predefinido.
+ * Clave: día de la semana (0 = domingo, 1 = lunes … 6 = sábado)
+ * Si un día/comida no está definido aquí, se elige aleatoriamente de OPCIONES.
+ *
+ * Ejemplo:
+ *   1: {  // Lunes
+ *     desayuno: { nombre: "Tostadas con huevo", imagen: "https://..." },
+ *     almuerzo: { nombre: "Milanesa con papas", imagen: "https://..." },
+ *     cena:     { nombre: "Sopa de verduras",   imagen: "https://..." },
+ *   },
+ */
+const MENU_SEMANAL = {
+  // Descomentá y completá los días que quieras fijar:
+  //
+  // 0: { // Domingo
+  //   desayuno: { nombre: "Medialunas", imagen: "https://..." },
+  // },
+};
+
+/**
+ * Lista de opciones por tipo de comida.
+ * Se usa cuando el día/comida no está en MENU_SEMANAL.
+ * La elección es aleatoria pero estable durante todo el día
+ * (misma comida si recargás la página).
+ */
+const OPCIONES = {
+  desayuno: [
+    // Agregá tus imágenes de desayuno en img/desayuno/ y listálas acá:
+    // { nombre: "Huevos revueltos", imagen: "img/desayuno/huevos-revueltos.png" },
+    // { nombre: "Avena",            imagen: "img/desayuno/avena.png" },
+    // { nombre: "Tostadas",         imagen: "img/desayuno/tostadas.png" },
+  ],
+  almuerzo: [
+    { nombre: "Carne con puré",    imagen: "img/almuerzo/carne-con-pure.png" },
+    { nombre: "Fideos con salsa",  imagen: "img/almuerzo/fideos-con-salsa.png" },
+    { nombre: "Pollo con arroz",   imagen: "img/almuerzo/pollo-con-arroz.png" },
+    // Agregá más almuerzos acá:
+    // { nombre: "Milanesa",        imagen: "img/almuerzo/milanesa.png" },
+  ],
+  cena: [
+    // Agregá tus imágenes de cena en img/cena/ y listálas acá:
+    // { nombre: "Sopa",            imagen: "img/cena/sopa.png" },
+    // { nombre: "Pizza",           imagen: "img/cena/pizza.png" },
+    // { nombre: "Ensalada",        imagen: "img/cena/ensalada.png" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  LÓGICA — no hace falta editar nada de acá para abajo
+// ═══════════════════════════════════════════════════════════════
+
+/** Pseudo-random estable dado un seed numérico */
+function seededRandom(seed) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+
+/** Devuelve el tipo de comida para una hora dada, o null si está fuera de horario */
+function getTipoComida(hora) {
+  for (const [tipo, { desde, hasta }] of Object.entries(HORARIOS)) {
+    if (hora >= desde && hora < hasta) return tipo;
+  }
+  return null;
+}
+
+/** Elige una comida de la lista de forma estable durante el día */
+function getComidaAleatoria(tipo, fecha) {
+  const opciones = OPCIONES[tipo];
+  // Seed único por día y tipo de comida
+  const seed =
+    fecha.getFullYear() * 10000 +
+    (fecha.getMonth() + 1) * 100 +
+    fecha.getDate() +
+    { desayuno: 1, almuerzo: 2, cena: 3 }[tipo];
+  const idx = Math.floor(seededRandom(seed) * opciones.length);
+  return opciones[idx];
+}
+
+function render() {
+  const ahora   = new Date();
+  const hora    = ahora.getHours();
+  const dia     = ahora.getDay();
+  const tipo    = getTipoComida(hora);
+
+  const appEl   = document.getElementById('app');
+  const bgEl    = document.getElementById('bg');
+  const typeEl  = document.getElementById('meal-type');
+  const nameEl  = document.getElementById('meal-name');
+  const clockEl = document.getElementById('clock');
+
+  clockEl.textContent = ahora.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  if (!tipo) {
+    appEl.classList.add('offhours');
+    typeEl.textContent = '';
+    nameEl.textContent = '¡A descansar!';
+    bgEl.style.backgroundImage = '';
+    return;
+  }
+
+  appEl.classList.remove('offhours');
+
+  const labels = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', cena: 'Cena' };
+  const comida =
+    MENU_SEMANAL[dia]?.[tipo] ?? getComidaAleatoria(tipo, ahora);
+
+  typeEl.textContent = labels[tipo];
+  nameEl.textContent = comida.nombre;
+  bgEl.style.backgroundImage = `url('${comida.imagen}')`;
+}
+
+render();
+
+// Actualizar el reloj cada minuto
+setInterval(() => {
+  const clockEl = document.getElementById('clock');
+  clockEl.textContent = new Date().toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}, 60_000);
+</script>
+</body>
+</html>
