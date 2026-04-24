@@ -35,12 +35,16 @@ comidas-one-page/
 - Carne con puré — `img/almuerzo/carne-con-pure.png`
 - Fideos con salsa — `img/almuerzo/fideos-con-salsa.png`
 - Pollo con arroz — `img/almuerzo/pollo-con-arroz.png`
+- Porotos — `img/almuerzo/porotos.png`
 
 ### Desayuno
 - Pan con palta — `img/desayuno/pan-con-palta-bebida-caliente.png`
+- Quesadillas y huevo — `img/desayuno/quesadillas-huevo.png`
 
 ### Cena
 - Pan con palta — `img/cena/pan-con-palta-bebida-caliente.png`
+- Galletas con atún — `img/cena/galletas-con-atun.png`
+- Quesadillas y huevo — `img/cena/quesadillas-huevo.png`
 
 ## Fijar menú por día
 
