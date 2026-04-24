@@ -37,6 +37,10 @@ comidas-one-page/
 - Pollo con arroz — `img/almuerzo/pollo-con-arroz.png`
 - Porotos — `img/almuerzo/porotos.png`
 - Lentejas — `img/almuerzo/lentejas.png`
+- Burritos — `img/almuerzo/burritos.png`
+- Estofado de carne — `img/almuerzo/estofado-de-carne.png`
+- Reineta con puré — `img/almuerzo/reineta-con-pure.png`
+- Salmón a la mantequilla con arroz — `img/almuerzo/salmon-a-la-mantequilla-con-arroz.png`
 
 ### Desayuno
 - Pan con palta — `img/desayuno/pan-con-palta-bebida-caliente.png`
