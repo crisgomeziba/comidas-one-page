@@ -46,11 +46,19 @@ comidas-one-page/
 - Pan con palta — `img/desayuno/pan-con-palta-bebida-caliente.png`
 - Quesadillas y huevo — `img/desayuno/quesadillas-huevo.png`
 - Yogurt y fruta — `img/desayuno/yogurt-y-fruta.png`
+- Pan con huevo y tomate — `img/desayuno/pan-con-huevo-y-tomate.png`
+- Pan con queso fresco — `img/desayuno/pan-con-queso-fresco.png`
+- Pan con ricotta y salame — `img/desayuno/pan-con-ricotta-y-salame.png`
+- Tostadas con mantequilla — `img/desayuno/tostadas-con-mantequilla.png`
 
 ### Cena
 - Pan con palta — `img/cena/pan-con-palta-bebida-caliente.png`
 - Galletas con atún — `img/cena/galletas-con-atun.png`
 - Quesadillas y huevo — `img/cena/quesadillas-huevo.png`
+- Pan con huevo y tomate — `img/cena/pan-con-huevo-y-tomate.png`
+- Pan con queso fresco — `img/cena/pan-con-queso-fresco.png`
+- Pan con ricotta y salame — `img/cena/pan-con-ricotta-y-salame.png`
+- Tostadas con mantequilla — `img/cena/tostadas-con-mantequilla.png`
 
 ## Fijar menú por día
 
