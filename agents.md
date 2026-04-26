@@ -38,7 +38,7 @@ comidas-one-page/
 - Pan con ricotta y salame — `img/desayuno/pan-con-ricotta-y-salame.png`
 - Tostadas con mantequilla — `img/desayuno/tostadas-con-mantequilla.png`
 
-### Almuerzo (9)
+### Almuerzo (10)
 - Carne con puré — `img/almuerzo/carne-con-pure.png`
 - Fideos con salsa — `img/almuerzo/fideos-con-salsa.png`
 - Pollo con arroz — `img/almuerzo/pollo-con-arroz.png`
@@ -48,6 +48,7 @@ comidas-one-page/
 - Estofado de carne — `img/almuerzo/estofado-de-carne.png`
 - Reineta con puré — `img/almuerzo/reineta-con-pure.png`
 - Salmón a la mantequilla con arroz — `img/almuerzo/salmon-a-la-mantequilla-con-arroz.png`
+- Chuleta con puré — `img/almuerzo/chuleta-con-pure.png`
 
 ### Cena (7)
 - Pan con palta — `img/cena/pan-con-palta-bebida-caliente.png`
